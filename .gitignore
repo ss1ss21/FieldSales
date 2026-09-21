@@ -1,0 +1,25 @@
+cat << 'EOF' > .gitignore
+# Node / Frontend
+node_modules/
+dist/
+build/
+*.local
+
+# .NET / Backend
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+
+# SQLite & Databases
+*.db
+*.db-shm
+*.db-wal
+FieldSalesDB.db
+
+# OS Files
+.DS_Store
+Thumbs.db
+EOF
