@@ -12,7 +12,7 @@ namespace backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _db;
-        private readonly ITokenService _tokenService; // <-- Değişti
+        private readonly ITokenService _tokenService; 
 
         public AuthController(AppDbContext db, ITokenService tokenService)
         {
@@ -54,8 +54,7 @@ namespace backend.Controllers
             {
                 return BadRequest(new { message = "E-posta veya şifre hatalı." });
             }
-
-            // Tek satırda token oluşturuluyor:
+            
             var tokenString = _tokenService.CreateToken(user);
 
             return Ok(new AuthResponseDto

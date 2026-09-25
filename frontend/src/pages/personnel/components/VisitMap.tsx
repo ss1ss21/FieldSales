@@ -25,7 +25,7 @@ interface VisitMapProps {
   routeCoords: [number, number][];
   isRouteActive: boolean;
   hoveredVisitId: number | null;
-  focusedCoords: [number, number] | null; // <-- YENİ EKLENDİ (Sidebar'dan zoom için)
+  focusedCoords: [number, number] | null;
   onMarkerClick: (visit: Visit) => void;
 }
 
@@ -35,8 +35,8 @@ function MapMarker({ visit, hoveredVisitId, mapRef, onMarkerClick }: { visit: Vi
   const isHovered = visit.id === hoveredVisitId;
   const icon = createNumberedIcon(isPending ? 'bg-orange-500' : 'bg-slate-400', visit.routeOrder, isHovered);
   
-  const lat = visit.customer.latitude;
-  const lng = visit.customer.longitude;
+  const lat = visit.customer?.latitude;
+  const lng = visit.customer?.longitude;
 
   useEffect(() => {
     const marker = markerRef.current;
@@ -45,6 +45,8 @@ function MapMarker({ visit, hoveredVisitId, mapRef, onMarkerClick }: { visit: Vi
     if (isHovered) marker.openPopup();
     else marker.closePopup();
   }, [isHovered]);
+
+  if (lat == null || lng == null) return null;
 
   return (
     <Marker 
@@ -62,8 +64,8 @@ function MapMarker({ visit, hoveredVisitId, mapRef, onMarkerClick }: { visit: Vi
     >
       <Popup closeButton={false} autoPan={false}>
         <div className="text-sm p-1">
-          <strong className="block text-slate-900 font-bold mb-0.5">{visit.routeOrder}. {visit.customer.dealerName}</strong>
-          <span className="text-xs text-slate-500 block">{visit.customer.address}</span>
+          <strong className="block text-slate-900 font-bold mb-0.5">{visit.routeOrder}. {visit.customer?.dealerName}</strong>
+          <span className="text-xs text-slate-500 block">{visit.customer?.address}</span>
         </div>
       </Popup>
     </Marker>
@@ -72,12 +74,14 @@ function MapMarker({ visit, hoveredVisitId, mapRef, onMarkerClick }: { visit: Vi
 
 export default function VisitMap({ currentLoc, visits, routeCoords, isRouteActive, hoveredVisitId, focusedCoords, onMarkerClick }: VisitMapProps) {
   const mapRef = useRef<L.Map | null>(null);
-  const defaultCenter = visits.length > 0 
-    ? [visits[0].customer.latitude, visits[0].customer.longitude] as [number, number]
-    : [39.92, 32.85] as [number, number];
-  const center = currentLoc ? [currentLoc.lat, currentLoc.lng] as [number, number] : defaultCenter;
 
-  // Sidebar'dan gelen focusedCoords (odaklanma koordinatı) değiştiğinde uçuş animasyonu (flyTo) yap
+  const firstValidVisit = visits.find(v => v.customer?.latitude != null && v.customer?.longitude != null);
+  const defaultCenter: [number, number] = firstValidVisit 
+    ? [firstValidVisit.customer.latitude, firstValidVisit.customer.longitude] 
+    : [36.8, 34.6];
+
+  const center: [number, number] = currentLoc ? [currentLoc.lat, currentLoc.lng] : defaultCenter;
+
   useEffect(() => {
     if (focusedCoords && mapRef.current) {
       mapRef.current.flyTo(focusedCoords, 16, { animate: true, duration: 1.2 });

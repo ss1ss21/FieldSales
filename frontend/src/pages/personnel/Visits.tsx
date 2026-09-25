@@ -133,7 +133,6 @@ export default function Visits() {
     }
   };
 
-  // ÇİFTE ONAY (KAÇAK ALERT) KALDIRILDI! Zaten Sidebar'daki Modal'dan onaylanıp buraya geliyor.
   const handleEndDay = async () => {
     if (!shift || !currentLoc) {
       setAlertInfo({ isOpen: true, message: "Geçerli bir mesai veya konum bulunamadı." });

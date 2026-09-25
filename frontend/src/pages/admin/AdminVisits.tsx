@@ -53,9 +53,17 @@ export default function AdminVisits() {
       setIsPlanModalOpen(false);
       loadVisits();
     } catch (err: any) {
-      // Çirkin 'alert' yerine şık 'InfoPopup' kullanıyoruz
-      const errorMessage = err.response?.data || "Plan kaydedilirken bir hata oluştu.";
-      setInfoPopup({ isOpen: true, title: "İşlem Başarısız", message: errorMessage });
+      const resData = err.response?.data;
+      const errorMessage =
+        resData?.message ||
+        (typeof resData === "string" ? resData : null) ||
+        "Plan kaydedilirken bir hata oluştu.";
+
+      setInfoPopup({
+        isOpen: true,
+        title: "İşlem Başarısız",
+        message: errorMessage
+      });
     }
   };
 

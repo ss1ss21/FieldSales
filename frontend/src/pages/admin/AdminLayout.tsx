@@ -46,6 +46,10 @@ export default function AdminLayout() {
            <NavLink to="/admin/visits" className={navLinkClass}>
             Randevular
           </NavLink>
+
+          <NavLink to="/admin/shift-reports" className={navLinkClass}>
+            Vardiya Raporları
+          </NavLink>
           
 
           <div className="block py-2.5 px-4 text-slate-500 cursor-not-allowed">Stoklar</div>

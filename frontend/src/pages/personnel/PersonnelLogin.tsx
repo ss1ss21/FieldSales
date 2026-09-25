@@ -8,7 +8,6 @@ export default function PersonnelLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // KORUMA (GUARD): Zaten Personel olarak giriş yapmışsa doğrudan içeri at
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -58,8 +57,8 @@ export default function PersonnelLogin() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-xl border-t-4 border-blue-500">
+    <div className="flex h-screen items-center justify-center bg-gray-300">
+      <div className="w-full max-w-md p-8 bg-gray-200 rounded-xl shadow-xl border-t-4 border-blue-500">
         <h2 className="text-2xl font-bold mb-2 text-center text-gray-800">Saha Personeli Girişi</h2>
         <p className="text-sm text-gray-500 mb-6 text-center">Günlük rota ve ziyaretleriniz için giriş yapın</p>
         

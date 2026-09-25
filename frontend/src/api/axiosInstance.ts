@@ -20,7 +20,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// 3. GELEN CEVAPLAR (Gümrükten Giriş)
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -29,7 +28,6 @@ axiosInstance.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       const role = localStorage.getItem('role');
       
-      // Şimdi hafızayı temizle
       localStorage.removeItem('token');
       localStorage.removeItem('role');
       localStorage.removeItem('fullname');

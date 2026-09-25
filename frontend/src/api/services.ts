@@ -68,7 +68,6 @@ export const VisitService = {
   endDay: (data: { shiftId: number; endLat: number; endLng: number }) => 
     axiosInstance.post("/visits/end-day", data),
 
-  // --- ADMİN İÇİN EKLENEN YENİ METOTLAR ---
   createVisit: (data: { personnelId: number; customerId: number; visitDate: string }) => 
     axiosInstance.post("/visits", data),
     

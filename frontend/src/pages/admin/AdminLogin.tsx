@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // 1. Link eklendi
 import axios from 'axios';
 
 export default function AdminLogin() {
@@ -8,11 +8,10 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // KORUMA (GUARD): Zaten Admin olarak giriş yapmışsa doğrudan içeri at
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
-    
+
     if (token && role === 'Admin') {
       navigate('/admin/customers', { replace: true });
     }
@@ -40,7 +39,7 @@ export default function AdminLogin() {
       localStorage.setItem('fullname', fullname);
 
       navigate('/admin/customers', { replace: true });
-      
+
     } catch (err: any) {
       if (err.response && err.response.data) {
         setError(err.response.data.message);
@@ -55,30 +54,36 @@ export default function AdminLogin() {
       <div className="w-full max-w-md p-8 bg-gray-800 rounded-xl shadow-2xl border-t-4 border-red-500">
         <h2 className="text-2xl font-bold mb-2 text-center text-white">Yönetici Paneli</h2>
         <p className="text-sm text-gray-400 mb-6 text-center">Sistem yönetimi için yetkili girişi</p>
-        
+
         {error && <div className="mb-4 p-3 bg-red-500/20 border border-red-500 text-red-300 rounded text-sm text-center">{error}</div>}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Admin E-posta</label>
-            <input 
+            <input
               type="email" required
               className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded focus:ring-2 focus:ring-red-500 outline-none"
-              value={email} onChange={e => setEmail(e.target.value)} 
+              value={email} onChange={e => setEmail(e.target.value)}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Şifre</label>
-            <input 
+            <input
               type="password" required
               className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded focus:ring-2 focus:ring-red-500 outline-none"
-              value={password} onChange={e => setPassword(e.target.value)} 
+              value={password} onChange={e => setPassword(e.target.value)}
             />
           </div>
           <button type="submit" className="w-full bg-red-600 text-white font-semibold py-2 rounded hover:bg-red-700 transition">
             Yönetici Olarak Gir
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link to="/personnel-login" className="text-sm text-gray-400 hover:text-white transition">
+            Saha personeli girişine git
+          </Link>
+        </div>
       </div>
     </div>
   );

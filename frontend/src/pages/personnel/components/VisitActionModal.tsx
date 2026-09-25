@@ -14,25 +14,30 @@ export default function VisitActionModal({ isOpen, onClose, onSubmit, visitName 
   const [status, setStatus] = useState('Completed'); 
   const [infoPopup, setInfoPopup] = useState({ isOpen: false, title: "", message: "" }); 
 
+  const handleClose = () => {
+    setNote('');
+    setStatus('Completed');
+    onClose();
+  };
+
   const handleSubmit = () => {
     if (!note.trim()) {
       setInfoPopup({ isOpen: true, title: "Eksik Bilgi", message: "Lütfen bir görüşme notu giriniz." });
       return;
     }
     onSubmit(status, note);
-    setNote('');
-    setStatus('Completed');
+    handleClose();
   };
 
   return (
     <>
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleClose}
         title="Ziyareti Sonuçlandır"
         closeText="İptal Et"
-        confirmText="Sisteme Kaydet" // <-- Senin Modal yapına uyumlu hale getirildi
-        onConfirm={handleSubmit}     // <-- Buton artık footer'da (Close'un yanında) çıkacak
+        confirmText="Sisteme Kaydet"
+        onConfirm={handleSubmit}
       >
         <div className="space-y-4 py-2">
           <div className="p-3 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-100">
@@ -46,7 +51,7 @@ export default function VisitActionModal({ isOpen, onClose, onSubmit, visitName 
               onChange={(e) => setStatus(e.target.value)}
               className="w-full p-2.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Completed">Onaylandırıldı (Sipariş/Tahsilat Alındı)</option>
+              <option value="Completed">Onaylandı (Sipariş/Tahsilat Alındı)</option>
               <option value="Postponed">Ertelendi</option>
               <option value="Rejected">Reddedildi</option>
             </select>
@@ -62,8 +67,6 @@ export default function VisitActionModal({ isOpen, onClose, onSubmit, visitName 
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
-          
-          {/* İçerideki 'Sisteme Kaydet' butonu silindi, işi Modal'ın footer'ı yapıyor! */}
         </div>
       </Modal>
 

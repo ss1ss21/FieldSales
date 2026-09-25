@@ -2,7 +2,7 @@ import type { Personnel, Customer } from "../../../api/services";
 
 interface Props {
   personnelList: Personnel[];
-  customers: Customer[]; // Personellere bağlı dükkanları bulmak için müşteri listesini de alıyoruz
+  customers: Customer[];
   loading: boolean;
   onEdit: (personnel: Personnel) => void;
   onDelete: (personnel: Personnel) => void;

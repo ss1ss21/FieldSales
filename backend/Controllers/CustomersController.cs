@@ -1,61 +1,61 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using backend.Data;
-using backend.Models;
+using backend.DTOs;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Sadece token'ı olan (giriş yapmış) kişiler istek atabilir
+    [Authorize]
     public class CustomersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICustomerService _customerService;
 
-        public CustomersController(AppDbContext context)
+        public CustomersController(ICustomerService customerService)
         {
-            _context = context;
+            _customerService = customerService;
         }
 
-        // GET: api/customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+        public async Task<ActionResult<IEnumerable<CustomerResponseDto>>> GetCustomers()
         {
-            // Müşterileri çekerken, onlara bağlı personelin bilgisini de getir
-            return await _context.Customers.Include(c => c.Personnel).ToListAsync();
+            var customers = await _customerService.GetAllCustomersAsync();
+            return Ok(customers);
         }
 
-        // POST: api/customers
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CustomerResponseDto>> GetCustomer(int id)
+        {
+            var customer = await _customerService.GetCustomerByIdAsync(id);
+            if (customer == null) return NotFound(new { message = "Müşteri bulunamadı." });
+            return Ok(customer);
+        }
+
         [HttpPost]
-        public async Task<ActionResult<Customer>> CreateCustomer(Customer customer)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<CustomerResponseDto>> CreateCustomer([FromBody] CreateCustomerDto dto)
         {
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
-            return Ok(customer);
+            var createdCustomer = await _customerService.CreateCustomerAsync(dto);
+            return CreatedAtAction(nameof(GetCustomer), new { id = createdCustomer.Id }, createdCustomer);
         }
 
-        // PUT: api/customers/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomer(int id, Customer customer)
+        [Authorize(Roles = "Admin")] // Sadece Admin müşteri güncelleyebilir
+        public async Task<IActionResult> UpdateCustomer(int id, [FromBody] UpdateCustomerDto dto)
         {
-            if (id != customer.Id) return BadRequest();
-
-            _context.Entry(customer).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return Ok(customer);
+            var success = await _customerService.UpdateCustomerAsync(id, dto);
+            if (!success) return NotFound(new { message = "Güncellenecek müşteri bulunamadı." });
+            return Ok(new { message = "Müşteri başarıyla güncellendi." });
         }
 
-        // DELETE: api/customers/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")] // Sadece Admin müşteri silebilir
         public async Task<IActionResult> DeleteCustomer(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null) return NotFound();
-
-            _context.Customers.Remove(customer);
-            await _context.SaveChangesAsync();
-            return Ok();
+            var success = await _customerService.DeleteCustomerAsync(id);
+            if (!success) return NotFound(new { message = "Silinecek müşteri bulunamadı." });
+            return Ok(new { message = "Müşteri başarıyla silindi." });
         }
     }
 }

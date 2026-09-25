@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { type Visit, type Shift } from '../../../api/services';
-import Modal from '../../../components/ui/Modal'; // <-- Senin şık Modal bileşenin
+import Modal from '../../../components/ui/Modal';
 
 interface VisitSidebarProps {
     shift: Shift | null;
@@ -29,7 +29,10 @@ export default function VisitSidebar({
     onStartDayProcess,
     onEndDay
 }: VisitSidebarProps) {
-    const [isEndDayModalOpen, setIsEndDayModalOpen] = useState(false); // Modal State'i
+    const [isEndDayModalOpen, setIsEndDayModalOpen] = useState(false);
+
+    // Mesai şu an aktif mi? (Vardiya açılmış, henüz bitmemiş ve gün kapatılmamış olmalı)
+    const isShiftActive = !!shift && !shift.endTime && !isDayEnded;
 
     const pendingVisits = visits.filter(v => v.status === 'Pending');
     const completedVisits = visits.filter(v => v.status !== 'Pending');
@@ -45,7 +48,7 @@ export default function VisitSidebar({
 
     const handleConfirmEndDay = () => {
         setIsEndDayModalOpen(false);
-        onEndDay(); // Asıl işlemi tetikle
+        onEndDay();
     };
 
     return (
@@ -56,7 +59,7 @@ export default function VisitSidebar({
                     <p className="text-slate-500 text-sm mt-0.5">Saha ziyaret ve operasyon takibi</p>
                 </div>
 
-                {shift && (
+                {isShiftActive && (
                     <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
                         <span className="text-xs font-semibold text-slate-600">
                             Aktif Mesai: {new Date(shift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -68,7 +71,13 @@ export default function VisitSidebar({
                     </div>
                 )}
 
-                {isDayEnded && !shift && (
+                {!isShiftActive && !isDayEnded && (
+                    <div className="p-3 bg-amber-50 text-amber-800 rounded-lg text-xs font-medium border border-amber-200 mb-4">
+                        Ziyaretleri sonuçlandırmak için önce <strong>"Güne Başla"</strong> butonuna basınız.
+                    </div>
+                )}
+
+                {isDayEnded && (
                     <div className="p-3 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold text-center border border-rose-100 mb-4">
                         Bugünlük mesainiz sonlandırılmıştır.
                     </div>
@@ -85,7 +94,7 @@ export default function VisitSidebar({
                         {pendingVisits.length === 0 ? (
                             <p className="text-xs text-slate-500 italic">Tüm bekleyen operasyonlar tamamlandı.</p>
                         ) : (
-                            pendingVisits.map((visit, index) => (
+                            pendingVisits.map((visit) => (
                                 <div
                                     key={visit.id}
                                     onClick={() => onClickVisit(visit)}
@@ -94,14 +103,15 @@ export default function VisitSidebar({
                                     className={`p-3.5 border rounded-xl transition-all cursor-pointer bg-white border-slate-200 hover:border-sky-400 ${hoveredVisitId === visit.id ? 'border-sky-500 shadow-md ring-1 ring-sky-200' : ''}`}
                                 >
                                     <div className="flex justify-between items-start mb-1.5">
-                                        <h3 className="font-bold text-slate-800 text-sm">{visit.routeOrder}. {visit.customer.dealerName}</h3>
+                                        <h3 className="font-bold text-slate-800 text-sm">{visit.routeOrder}. {visit.customer?.dealerName}</h3>
                                         <span className={`text-[10px] px-2 py-0.5 rounded font-semibold border ${getStatusStyle(visit.status).color}`}>
                                             {getStatusStyle(visit.status).label}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-500 truncate mb-2">{visit.customer.address}</p>
+                                    <p className="text-xs text-slate-500 truncate mb-2">{visit.customer?.address}</p>
 
-                                    {!isDayEnded && (
+                                    {/* SADECE VE SADECE MESAİ AKTİFKEN BUTON GÖRÜNÜR */}
+                                    {isShiftActive && (
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -136,12 +146,12 @@ export default function VisitSidebar({
                                     className={`p-3.5 border rounded-xl transition-all cursor-pointer bg-slate-50 border-slate-100 hover:border-slate-300 ${hoveredVisitId === visit.id ? 'shadow-sm border-slate-300' : 'opacity-80'}`}
                                 >
                                     <div className="flex justify-between items-start mb-1.5">
-                                        <h3 className="font-bold text-slate-700 text-sm line-through decoration-slate-300">{visit.routeOrder}. {visit.customer.dealerName}</h3>
+                                        <h3 className="font-bold text-slate-700 text-sm line-through decoration-slate-300">{visit.routeOrder}. {visit.customer?.dealerName}</h3>
                                         <span className={`text-[10px] px-2 py-0.5 rounded font-semibold border ${getStatusStyle(visit.status).color}`}>
                                             {getStatusStyle(visit.status).label}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-500 truncate">{visit.customer.address}</p>
+                                    <p className="text-xs text-slate-500 truncate">{visit.customer?.address}</p>
                                 </div>
                             ))
                         )}
@@ -150,27 +160,29 @@ export default function VisitSidebar({
             </div>
 
             <div className="pt-4 border-t border-slate-100 space-y-2">
-                {!shift ? (
+                {isDayEnded ? (
+                    <div className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl text-center text-xs font-bold border border-slate-200">
+                        Günlük Mesai Tamamlandı
+                    </div>
+                ) : !isShiftActive ? (
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={onGenerateRoute}
-                            disabled={isDayEnded}
-                            className={`w-full py-3 rounded-xl font-bold text-xs transition shadow-sm flex items-center justify-center gap-1 ${isDayEnded ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'}`}
+                            className="w-full py-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 transition shadow-sm"
                         >
                             Rota Oluştur
                         </button>
                         <button
                             onClick={onStartDayProcess}
-                            disabled={isDayEnded}
-                            className={`w-full py-3 rounded-xl font-bold text-xs transition shadow-md flex items-center justify-center gap-1 ${isDayEnded ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-sky-600 text-white hover:bg-sky-700'}`}
+                            className="w-full py-3 rounded-xl font-bold text-xs bg-sky-600 text-white hover:bg-sky-700 transition shadow-md"
                         >
                             Güne Başla
                         </button>
                     </div>
                 ) : (
                     <button
-                        onClick={() => setIsEndDayModalOpen(true)} // Tıklanınca şık modali aç
-                        className="w-full bg-red-500 text-white border border-rose-200 py-3 rounded-xl font-bold text-xs hover:bg-red-600 hover:text-white transition shadow-sm"
+                        onClick={() => setIsEndDayModalOpen(true)}
+                        className="w-full bg-red-500 text-white border border-rose-200 py-3 rounded-xl font-bold text-xs hover:bg-red-600 transition shadow-sm"
                     >
                         Günü Bitir (Mesaiyi Sonlandır)
                     </button>

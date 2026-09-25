@@ -16,7 +16,6 @@ export default function PersonnelLayout() {
     }
   }, [token, role, navigate]);
 
-  // Yönlendirme bitene kadar eski sayfa görünmesin diye "null" döndürüyoruz
   if (!token || role !== 'Personnel') {
     return null; 
   }

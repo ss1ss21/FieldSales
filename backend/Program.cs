@@ -11,7 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // TokenService DI kaydı
-builder.Services.AddScoped<ITokenService, TokenService>(); // 2. Servis DI konteynerine eklendi
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IVisitService, VisitService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -51,7 +54,6 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();        
 app.UseAuthorization();        
 
-// 2. CustomersController, UsersController, VisitsController ve AuthController rotalarını aktif ediyoruz
 app.MapControllers();
 
 app.Run();

@@ -1,97 +1,65 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using backend.Data;
-using backend.Models;
+using backend.DTOs;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
-    public class PersonnelRequestDto
-    {
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string? Password { get; set; }
-    }
-
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserService _userService;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IUserService userService)
         {
-            _context = context;
+            _userService = userService;
         }
 
-        // GET: api/users/personnel
         [HttpGet("personnel")]
         public async Task<IActionResult> GetPersonnel()
         {
-            var personnelList = await _context.Users
-                .Where(u => u.Role == "Personnel")
-                .Select(u => new 
-                { 
-                    Id = u.Id, 
-                    FullName = u.FullName, 
-                    Email = u.Email 
-                })
-                .ToListAsync();
+            var personnelList = await _userService.GetPersonnelListAsync();
             return Ok(personnelList);
         }
 
-        // POST: api/users (Yeni Personel Ekleme - 404'ü çözen eksik uç)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUser([FromBody] PersonnelRequestDto dto)
         {
-            if (string.IsNullOrEmpty(dto.Password))
+            var result = await _userService.CreatePersonnelAsync(dto);
+            if (!result.Success)
             {
-                return BadRequest("Şifre alanı zorunludur.");
+                return BadRequest(new { message = result.ErrorMessage });
             }
 
-            var newUser = new User
-            {
-                FullName = dto.FullName,
-                Email = dto.Email,
-                Role = "Personnel",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password) 
-            };
-            
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
-
-            return Ok(newUser);
+            return Ok(result.Data);
         }
 
-        // PUT: api/users/5 (Personel Güncelleme)
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] PersonnelRequestDto dto)
         {
-            var existingUser = await _context.Users.FindAsync(id);
-            if (existingUser == null) return NotFound("Personel bulunamadı.");
-
-            existingUser.FullName = dto.FullName;
-            existingUser.Email = dto.Email;
-            
-            if (!string.IsNullOrEmpty(dto.Password))
+            var result = await _userService.UpdatePersonnelAsync(id, dto);
+            if (!result.Success)
             {
-                existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+                return BadRequest(new { message = result.ErrorMessage });
             }
 
-            await _context.SaveChangesAsync();
-            return Ok(existingUser);
+            return Ok(result.Data);
         }
 
-        // DELETE: api/users/5 (Personel Silme)
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound("Personel bulunamadı.");
+            var result = await _userService.DeletePersonnelAsync(id);
+            if (!result.Success)
+            {
+                return NotFound(new { message = result.ErrorMessage });
+            }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
             return Ok(new { message = "Personel başarıyla silindi." });
         }
     }

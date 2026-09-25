@@ -11,6 +11,7 @@ import Customers from './pages/admin/Customers';
 import Visits from './pages/personnel/Visits';
 import PersonnelPage from "./pages/admin/Personnel";
 import AdminVisits from './pages/admin/AdminVisits';
+import AdminShiftReports from './pages/admin/AdminShiftReports.tsx';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="personnel" element={<PersonnelPage />} />
           <Route path="visits" element={<AdminVisits />} />
+          <Route path="shift-reports" element={<AdminShiftReports/>} />
         </Route>
 
         {/* Personel Rotaları (PersonnelLayout içinde açılır) */}
